@@ -69,7 +69,9 @@ for key in PotionEffectID.keys():
 
 inputs = (
 	("MobID", MobIDKeys),
-	("Age (Animals): ", (-600, 0)),
+	("MinSpawnDelay: ", (200, 0, 10000)),
+	("MaxSpawnDelay: ", (800, 0, 20000)),
+	("Age (Animals): ", (0, -600, 0)),
 	("Saddle (Pig): ", (0, 1)),
 	("Sheared (Sheep): ", (0, 1)),
 	("Color (Sheep): ", (0, 15)),
@@ -83,7 +85,7 @@ inputs = (
 	("Potion Effect: ", PotionEffectIDKeys),
 	("Potion Amplifier: ", (0, 100)),
 	("Potion Duration: ", (0, 1000000000)),
-	("Health: ", (1, 1000000)),
+	("Health: ", (20, 1, 32767)),
 )
 
 displayName = "Create Super-Spawner"
@@ -91,6 +93,8 @@ displayName = "Create Super-Spawner"
 
 def perform(level, box, options):
 	health = options["Health: "]
+	minspawn = options["MinSpawnDelay: "]
+	maxspawn = options["MaxSpawnDelay: "]
 	age = options["Age (Animals): "]
 	saddled = options["Saddle (Pig): "]
 	sheared = options["Sheared (Sheep): "]
@@ -102,7 +106,7 @@ def perform(level, box, options):
 	carried = options["Carried (EnderMan): "]
 	carrieddata = options["CarriedData (EnderMan): "]
 	profession = options["Profession (Villager): "]
-	poteffect = options["Potion Effect: "]
+	poteffect = PotionEffectID[options["Potion Effect: "]]
 	potamp = options["Potion Amplifier: "]
 	potdur = options["Potion Duration: "]
 	
@@ -110,9 +114,9 @@ def perform(level, box, options):
 		for y in range(box.miny, box.maxy):
 			for z in range(box.minz, box.maxz):
 				if level.blockAt(x, y, z) == 52:
-					createSuperSpawner(level, x, y, z, health, MobID[options["MobID"]], age, saddled, sheared, color, powered, size, angry, anger, carried, carrieddata, profession, poteffect, potamp, potdur)
+					createSuperSpawner(level, x, y, z, health, minspawn, maxspawn, MobID[options["MobID"]], age, saddled, sheared, color, powered, size, angry, anger, carried, carrieddata, profession, poteffect, potamp, potdur)
 
-def createSuperSpawner(level, x, y, z, health, mobid, age, saddled, sheared, color, powered, size, angry, anger, carried, carrieddata, profession, poteffect, potamp, potdur):
+def createSuperSpawner(level, x, y, z, health, minspawn, maxspawn, mobid, age, saddled, sheared, color, powered, size, angry, anger, carried, carrieddata, profession, poteffect, potamp, potdur):
 	mobSpawner = level.tileEntityAt(x, y, z)
 	if mobSpawner == None:
 		return
@@ -124,6 +128,8 @@ def createSuperSpawner(level, x, y, z, health, mobid, age, saddled, sheared, col
 	mobSpawner2["Delay"] = TAG_Short(120)
 	mobSpawner2["SpawnData"] = TAG_Compound()
 	mobSpawner2["SpawnData"]["Health"] = TAG_Short(health)
+	mobSpawner2["SpawnData"]["MinSpawnDelay"] = TAG_Short(minspawn)
+	mobSpawner2["SpawnData"]["MaxSpawnDelay"] = TAG_Short(maxspawn)
 	mobSpawner2["SpawnData"]["Saddle"] = TAG_Byte(saddled)
 	mobSpawner2["SpawnData"]["Sheared"] = TAG_Byte(sheared)
 	mobSpawner2["SpawnData"]["Color"] = TAG_Byte(color)
@@ -134,7 +140,7 @@ def createSuperSpawner(level, x, y, z, health, mobid, age, saddled, sheared, col
 	mobSpawner2["SpawnData"]["carried"] = TAG_Short(carried)
 	mobSpawner2["SpawnData"]["carriedData"] = TAG_Short(carrieddata)
 	mobSpawner2["SpawnData"]["Profession"] = TAG_Int(profession)
-	mobSpawner2["SpawnData"]["AciveEffects"] = TAG_List()
+	mobSpawner2["SpawnData"]["ActiveEffects"] = TAG_List()
 	effect1 = TAG_Compound()
 	effect1["Amplifier"] = TAG_Byte(potamp)
 	effect1["Id"] = TAG_Byte(poteffect)
